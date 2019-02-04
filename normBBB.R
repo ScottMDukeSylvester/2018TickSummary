@@ -43,6 +43,15 @@ names(data) = c('date',
 cat('normBBB.R: Msg: Adding transect number\n')
 data$transect = 1:nrow(data)
 
+# Find and report broken field codes
+cat('normBBB.R: Msg: Reporting broken field codes\n')
+data$fieldCode[ is.na(data$fieldCode) ] = ''
+indexCode   = regexpr('^[0-9a-zA-Z]+$', data$fieldCode) != -1
+indexBroken = indexCode & (regexpr('^BBB2018[0-9]{6}$', data$fieldCode) == -1)
+cat('normAAA.R: Msg: There are ',nrow(data),' records total\n')
+cat('normAAA.R: Msg: There are ',sum(indexCode),' records with field codes\n')
+cat('normAAA.R: Msg: There are ',sum(indexBroken),' records with broken field codes\n')
+print(subset(data, indexBroken))
 
 # Now create the day, month and year columns 
 cat('normBBB.R: Msg: Creating date columns\n')

@@ -49,27 +49,47 @@ data = data %>% rename(notes    = X23)
 # build the final fieldCode column
 cat('normAAA.R: Msg: Building fieldCode\n')
 data$fieldCode = with(data, paste(INIT,y0,y1,y2,y3,m0,m1,d0,d1,sprintf('%02d',as.integer(SeqNum) ),sep='') )
+data$fieldCode = str_remove_all(data$fieldCode, 'NA')
 
-# Strip out incomplete or broken field codes
-cat('normAAA.R: Msg: Dropping broken field codes\n')
-index = regexpr('^JTB[0-9a-zA-Z]+', data$fieldCode) == -1
-data$fieldCode[index] = ''
+# Find and report broken field codes
+cat('normAAA.R: Msg: Reporting broken field codes\n')
+indexCode   = regexpr('^$', data$fieldCode) == -1
+indexBroken = indexCode & (regexpr('^AAA2018[0-9]{6}$', data$fieldCode) == -1)
+cat('normAAA.R: Msg: There are ',nrow(data),' records total\n')
+cat('normAAA.R: Msg: There are ',sum(indexCode),' records with field codes\n')
+cat('normAAA.R: Msg: There are ',sum(indexBroken),' records with broken field codes\n')
+print(subset(data, indexBroken))
+
 
 # build the location for each transect
 cat('normAAA.R: Msg: Building transect locations\n')
+index = regexpr('^-09[0-9] [0-9]{2}.[0-9]+$', data$startLng ) == - 1  
+index = index | regexpr('^-09[0-9] [0-9]{2}.[0-9]+$', data$endLng   ) == - 1
+index = index | regexpr('^[0-9]{2} [0-9]{2}.[0-9]+$', data$startLat ) == - 1
+index = index | regexpr('^[0-9]{2} [0-9]{2}.[0-9]+$', data$endLat   ) == - 1
+index[ is.na(index) ] = F
+cat('normAAA.R: Msg: Number of records with program coordinates = ', sum(index),'\n')
+print(subset(data, index))
+
 data$startLNGDegrees = (data$startLng %>% str_split(' ', simplify=TRUE))[,1] 
 data$startLNGMinutes = (data$startLng %>% str_split(' ', simplify=TRUE))[,2] 
-data$startLNG        = as.numeric(data$startLNGDegrees) - as.numeric(data$startLNGMinutes)/60.0
+data$startLNG        = as.numeric(data$startLNGDegrees) - as.numeric(data$startLNGMinutes)/60.0 
+data$startLNG        = round( data$startLNG, digits = 5)
+
 data$startLATDegrees = (data$startLat %>% str_split(' ', simplify=TRUE))[,1] 
 data$startLATMinutes = (data$startLat %>% str_split(' ', simplify=TRUE))[,2] 
-data$startLAT        = as.numeric(data$startLATDegrees) + as.numeric(data$startLATMinutes)/60.0
+data$startLAT        = as.numeric(data$startLATDegrees) + as.numeric(data$startLATMinutes)/60.0 
+data$startLAT        = round( data$startLAT, digits = 5)
 
 data$endLNGDegrees   = (data$endLng %>% str_split(' ', simplify=TRUE))[,1] 
 data$endLNGMinutes   = (data$endLng %>% str_split(' ', simplify=TRUE))[,2] 
-data$endLNG          = as.numeric(data$endLNGDegrees) - as.numeric(data$endLNGMinutes)/60.0
+data$endLNG          = as.numeric(data$endLNGDegrees) - as.numeric(data$endLNGMinutes)/60.0 
+data$endLNG          = round( data$endLNG, digits=5)
+
 data$endLATDegrees   = (data$endLat %>% str_split(' ', simplify=TRUE))[,1] 
 data$endLATMinutes   = (data$endLat %>% str_split(' ', simplify=TRUE))[,2] 
-data$endLAT          = as.numeric(data$endLATDegrees) + as.numeric(data$endLATMinutes)/60.0
+data$endLAT          = as.numeric(data$endLATDegrees) + as.numeric(data$endLATMinutes)/60.0 
+data$endLAT          = round( data$endLAT, digits=5)
 
 data$lng             = (data$startLNG + data$endLNG)/2.0
 data$lat             = (data$startLAT + data$endLAT)/2.0
