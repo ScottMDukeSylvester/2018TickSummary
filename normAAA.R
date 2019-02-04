@@ -106,9 +106,15 @@ data = data %>% rename(endLat   = endLAT)
 cat('normAAA.R: Msg: Adding site column\n')
 data$site = ''
 
+# Add collector column
+cat('normAAA.R: Msg: Adding collector column\n')
+data$collector = 'AAA'
+
+
 # Give the columns the correct order
 cat('normAAA.R: Msg: Reordering columns\n')
-data = data[c('transect',
+data = data[c('collector',
+                'transect',
                 'fieldCode',
                 'day',
                 'month',

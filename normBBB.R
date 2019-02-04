@@ -16,6 +16,7 @@ filenameFinal = '2018 BBB 020 final.csv'
 # Read in the data
 #
 #####################################
+cat('normBBB.R: Msg: Loading the raw data\n')
 data = read_csv(filenameRaw)
 
 #####################################
@@ -26,6 +27,7 @@ data = read_csv(filenameRaw)
 #####################################
 
 # First, lets fix the names
+cat('normBBB.R: Msg: Fixing the columns names\n')
 names(data) = c('date', 
                 'site', 
                 'time', 
@@ -38,24 +40,34 @@ names(data) = c('date',
                 'fieldCode' )
 
 # lets add the transect number
+cat('normBBB.R: Msg: Adding transect number\n')
 data$transect = 1:nrow(data)
 
 
 # Now create the day, month and year columns 
+cat('normBBB.R: Msg: Creating date columns\n')
 data$day   = day  ( parse_date_time(data$date, 'dmy') )
 data$month = month( parse_date_time(data$date, 'dmy') )
 data$year  = year ( parse_date_time(data$date, 'dmy') )
 
 # Create the hours and minutes columns
+cat('normBBB.R: Msg: creaing hour and minute columns\n')
 data$hour = hour( parse_date_time(data$time, 'HM') )
 data$min  = minute( parse_date_time(data$time, 'HM') )
 
 # Create the transect centers
+cat('normBBB.R: Msg: Creating transect center\n')
 data$lng = (data$startLng + data$endLng)/2.0
 data$lat = (data$startLat + data$endLat)/2.0
 
+# Add the collector column
+cat('normBBB.R: Msg: Adding collector column\n')
+data$collector = 'BBB'
+
 # Place the columns in the correct order
-data = data[c('transect',
+cat('normBBB.R: Msg: Giving the columns the correct order\n')
+data = data[c('collector',
+                'transect',
                 'fieldCode',
                 'day',
                 'month',
@@ -72,4 +84,7 @@ data = data[c('transect',
                 'numTicks', 
                 'notes')]
 
+cat('normBBB.R: Msg: Writting final data\n')
 write_csv(data, filenameFinal, na=' ')
+
+cat('normBBB.R: Msg: Done\n')
